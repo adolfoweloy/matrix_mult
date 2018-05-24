@@ -45,6 +45,10 @@ int main(int argc, char *argv[]) {
   Matrix_t b = matrix_load_from_file(matrix_file_b);
   Matrix_t c;
 
+  Matrix_t d = matrix_create(a.rows-num_sparse_rows(a), a.cols);
+  d = sparsed_matrix(a);
+  Matrix_t e = matrix_create(a.rows, b.cols);
+
   //testing
   size_t *tt = matrix_sparsity(a);
 
@@ -56,17 +60,20 @@ int main(int argc, char *argv[]) {
     {
       case 'p':
         printf("using pthreads version\n");
-        c = matrix_mult_pthread(a, b, tt);
+        c = matrix_mult_pthread(d, b, tt);
         break;
       case 'o':
         printf("using openmp version\n");
-        c = matrix_mult_openmp(a, b, a.rows, 1);
+        c = matrix_mult_openmp(d, b, d.rows, 1);
         break;
       default:
         printf("using single threaded version\n");
-        c = matrix_mult(a, b);
+        c = matrix_mult(d, b);
     }
-    matrix_print_to_file(matrix_file_c, c);
+
+	e = de_sparsing(c, num_sparse_rows(a), matrix_sparsity(a));
+
+    matrix_print_to_file(matrix_file_c, e);
     printf("Results written to %s\n", matrix_path_c);
     release_resources();
     return 0;

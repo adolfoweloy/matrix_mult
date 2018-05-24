@@ -130,3 +130,62 @@ size_t* matrix_sparsity(Matrix_t a)
   }
   return result;
 }
+
+Matrix_t sparsed_matrix(Matrix_t a)
+{
+  size_t sparsed_rows = num_sparse_rows(a);
+  size_t z = 0;
+  bool flag = true;
+  Matrix_t result = matrix_create(a.rows-sparsed_rows, a.cols);
+  
+  for(size_t i = 0; i < a.rows; i++)
+  {
+	flag = true;
+	for(size_t j = 0; j < sparsed_rows; j++)
+	{
+	  if(*(matrix_sparsity(a)+j) == i)
+		{
+		  flag = false;
+		  z++;
+		}
+	}
+	if(flag)
+	  for(size_t k = 0; k < a.cols; k++)
+	  	result.items[i-z][k] = a.items[i][k];
+  }
+  return result;
+}
+
+size_t num_sparse_rows(Matrix_t a)
+{
+  size_t sparsed_rows = 0;
+  for(size_t i = 0; i < a.rows; i++)
+    if(*(matrix_sparsity(a)+i) != -1)
+	sparsed_rows++; 
+  return sparsed_rows;
+}
+
+Matrix_t de_sparsing(Matrix_t a, size_t num_sparsed_rows, size_t *sparsed_rows)
+{
+  size_t z = 0;
+  bool flag = true;
+  Matrix_t result = matrix_create(a.rows+num_sparsed_rows, a.cols);
+
+  for(size_t i = 0; i < a.rows+num_sparsed_rows; i++)
+  {
+	flag = true;
+	for(size_t j = 0; j < num_sparsed_rows; j++)
+	{
+	  if(*(sparsed_rows+j) == i)
+	  {
+		flag = false;
+		z++;
+	  }
+	}
+	if(flag)
+	  for(size_t k = 0; k < a.cols; k++)
+	  	result.items[i][k] = a.items[i-z][k];
+  }
+
+  return result;
+}
